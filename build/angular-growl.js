@@ -1,5 +1,5 @@
 /**
- * angular-growl-v2 - v0.6.1 - 2014-06-19
+ * angular-growl-v2 - v0.6.1 - 2014-07-29
  * http://janstevens.github.io/angular-growl-2
  * Copyright (c) 2014 Marco Rinck,Jan Stevens; Licensed MIT
  */
@@ -26,18 +26,29 @@ angular.module('angular-growl').directive('growl', [
           $scope.messages = [];
           var referenceId = $scope.reference || 0;
           $scope.inlineMessage = $scope.inline || growl.inlineMessages();
-          function addMessage(message) {
+          function addMessage(message, custom) {
             $timeout(function () {
-              message.text = $sce.trustAsHtml(String(message.text));
-              if (growl.reverseOrder()) {
-                $scope.messages.unshift(message);
-              } else {
+              if (custom === true) {
+                message.custom = true;
                 $scope.messages.push(message);
-              }
-              if (message.ttl && message.ttl !== -1) {
-                $timeout(function () {
-                  $scope.deleteMessage(message);
-                }, message.ttl);
+                if (message.ttl && message.ttl !== -1) {
+                  $timeout(function () {
+                    $scope.deleteMessage(message);
+                  }, message.ttl);
+                }
+              } else {
+                message.custom = false;
+                message.text = $sce.trustAsHtml(String(message.text));
+                if (growl.reverseOrder()) {
+                  $scope.messages.unshift(message);
+                } else {
+                  $scope.messages.push(message);
+                }
+                if (message.ttl && message.ttl !== -1) {
+                  $timeout(function () {
+                    $scope.deleteMessage(message);
+                  }, message.ttl);
+                }
               }
             }, true);
           }
@@ -185,7 +196,8 @@ angular.module('angular-growl').provider('growl', function () {
     '$rootScope',
     '$interpolate',
     '$filter',
-    function ($rootScope, $interpolate, $filter) {
+    '$q',
+    function ($rootScope, $interpolate, $filter, $q) {
       var translate;
       try {
         translate = $filter('translate');
@@ -199,6 +211,9 @@ angular.module('angular-growl').provider('growl', function () {
           message.text = polation(message.variables);
         }
         $rootScope.$broadcast('growlMessage', message);
+      }
+      function broadcastCustomPromiseMessage(config) {
+        $rootScope.$broadcast('growlCustomPromiseMessage', config);
       }
       function sendMessage(text, config, severity) {
         var _config = config || {}, message;
@@ -214,6 +229,11 @@ angular.module('angular-growl').provider('growl', function () {
           referenceId: _config.referenceId || _referenceId
         };
         broadcastMessage(message);
+      }
+      function customPromiseMessage(config) {
+        config.promise = $q.defer();
+        broadcastCustomPromiseMessage(config);
+        return config.promise.promise;
       }
       function warning(text, config) {
         sendMessage(text, config, 'warning');
@@ -258,6 +278,7 @@ angular.module('angular-growl').provider('growl', function () {
         error: error,
         info: info,
         success: success,
+        customPromiseMessage: customPromiseMessage,
         addServerMessages: addServerMessages,
         onlyUnique: onlyUnique,
         reverseOrder: reverseOrder,

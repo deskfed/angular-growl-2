@@ -154,7 +154,7 @@ angular.module("angular-growl").provider("growl", function() {
       };
   }];
 
-  this.$get = ["$rootScope", "$interpolate", "$filter", function ($rootScope, $interpolate, $filter) {
+  this.$get = ["$rootScope", "$interpolate", "$filter", "$q", function ($rootScope, $interpolate, $filter, $q) {
     var translate;
 
     try {
@@ -173,6 +173,10 @@ angular.module("angular-growl").provider("growl", function() {
       $rootScope.$broadcast("growlMessage", message);
     }
 
+    function broadcastCustomPromiseMessage(config) {
+      $rootScope.$broadcast('growlCustomPromiseMessage', config);
+    }
+
     function sendMessage(text, config, severity) {
       var _config = config || {}, message;
 
@@ -189,6 +193,12 @@ angular.module("angular-growl").provider("growl", function() {
       };
 
       broadcastMessage(message);
+    }
+
+    function customPromiseMessage(config) {
+      config.promise = $q.defer();
+      broadcastCustomPromiseMessage(config);
+      return config.promise.promise;
     }
 
     /**
@@ -273,6 +283,7 @@ angular.module("angular-growl").provider("growl", function() {
       error: error,
       info: info,
       success: success,
+      customPromiseMessage: customPromiseMessage,
       addServerMessages: addServerMessages,
       onlyUnique: onlyUnique,
       reverseOrder : reverseOrder,

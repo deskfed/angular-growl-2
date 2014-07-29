@@ -17,23 +17,34 @@ angular.module("angular-growl").directive("growl", ["$rootScope", "$sce",
           var referenceId = $scope.reference || 0;
           $scope.inlineMessage = $scope.inline || growl.inlineMessages();
 
-          function addMessage(message) {
+          function addMessage(message, custom) {
             $timeout(function() {
-              message.text = $sce.trustAsHtml(String(message.text));
-
-              /** abillity to reverse order (newest first ) **/
-              if(growl.reverseOrder())
-              {
-                  $scope.messages.unshift(message);
+              if (custom === true) {
+                message.custom = true;
+                $scope.messages.push(message);
+                if (message.ttl && message.ttl !== -1) {
+                  $timeout(function () {
+                    $scope.deleteMessage(message);
+                  }, message.ttl);
+                }
               } else {
-                  $scope.messages.push(message);
-              }
+                message.custom = false;
+                message.text = $sce.trustAsHtml(String(message.text));
+
+                /** abillity to reverse order (newest first ) **/
+                if(growl.reverseOrder())
+                {
+                    $scope.messages.unshift(message);
+                } else {
+                    $scope.messages.push(message);
+                }
 
 
-              if (message.ttl && message.ttl !== -1) {
-                $timeout(function() {
-                  $scope.deleteMessage(message);
-                }, message.ttl);
+                if (message.ttl && message.ttl !== -1) {
+                  $timeout(function() {
+                    $scope.deleteMessage(message);
+                  }, message.ttl);
+                }
               }
             }, true);
           }
