@@ -71,6 +71,9 @@ angular.module('angular-growl').directive('growl', [
               }
             }
           });
+          $rootScope.$on('growlCustomPromiseMessage', function (event, config) {
+            addMessage(config, true);
+          });
           $scope.deleteMessage = function (message) {
             var index = $scope.messages.indexOf(message);
             if (index > -1) {
