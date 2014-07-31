@@ -21,30 +21,24 @@ angular.module("angular-growl").directive("growl", ["$rootScope", "$sce",
             $timeout(function() {
               if (custom === true) {
                 message.custom = true;
-                $scope.messages.push(message);
-                if (message.ttl && message.ttl !== -1) {
-                  $timeout(function () {
-                    $scope.deleteMessage(message);
-                  }, message.ttl);
-                }
               } else {
                 message.custom = false;
                 message.text = $sce.trustAsHtml(String(message.text));
+              }
 
-                /** abillity to reverse order (newest first ) **/
-                if(growl.reverseOrder())
-                {
-                    $scope.messages.unshift(message);
-                } else {
-                    $scope.messages.push(message);
-                }
+              /** abillity to reverse order (newest first ) **/
+              if(growl.reverseOrder())
+              {
+                  $scope.messages.unshift(message);
+              } else {
+                  $scope.messages.push(message);
+              }
 
 
-                if (message.ttl && message.ttl !== -1) {
-                  $timeout(function() {
-                    $scope.deleteMessage(message);
-                  }, message.ttl);
-                }
+              if (message.ttl && message.ttl !== -1) {
+                $timeout(function() {
+                  $scope.deleteMessage(message);
+                }, message.ttl);
               }
             }, true);
           }

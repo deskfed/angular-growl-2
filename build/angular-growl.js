@@ -1,5 +1,5 @@
 /**
- * angular-growl-v2 - v0.6.1 - 2014-07-29
+ * angular-growl-v2 - v0.6.2 - 2014-07-31
  * http://janstevens.github.io/angular-growl-2
  * Copyright (c) 2014 Marco Rinck,Jan Stevens; Licensed MIT
  */
@@ -30,25 +30,19 @@ angular.module('angular-growl').directive('growl', [
             $timeout(function () {
               if (custom === true) {
                 message.custom = true;
-                $scope.messages.push(message);
-                if (message.ttl && message.ttl !== -1) {
-                  $timeout(function () {
-                    $scope.deleteMessage(message);
-                  }, message.ttl);
-                }
               } else {
                 message.custom = false;
                 message.text = $sce.trustAsHtml(String(message.text));
-                if (growl.reverseOrder()) {
-                  $scope.messages.unshift(message);
-                } else {
-                  $scope.messages.push(message);
-                }
-                if (message.ttl && message.ttl !== -1) {
-                  $timeout(function () {
-                    $scope.deleteMessage(message);
-                  }, message.ttl);
-                }
+              }
+              if (growl.reverseOrder()) {
+                $scope.messages.unshift(message);
+              } else {
+                $scope.messages.push(message);
+              }
+              if (message.ttl && message.ttl !== -1) {
+                $timeout(function () {
+                  $scope.deleteMessage(message);
+                }, message.ttl);
               }
             }, true);
           }
